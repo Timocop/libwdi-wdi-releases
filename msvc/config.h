@@ -27,7 +27,7 @@
 #endif
 
 /* WDK WDF coinstaller version */
-#define WDF_VER 1011
+#define WDF_VER 1009//1011
 
 /* CoInstaller subdirectory for WinUSB redist files ("winusb" or "wdf") */
 #define COINSTALLER_DIR "wdf"
@@ -37,12 +37,12 @@
 
 /* embed libusb0 driver files from the following location */
 #ifndef LIBUSB0_DIR
-#define LIBUSB0_DIR "D:/libusb-win32"
+#define LIBUSB0_DIR "W:\\libwdi-wdi-releases\\bin_libusb32"
 #endif
 
 /* embed libusbK driver files from the following location */
 #ifndef LIBUSBK_DIR
-#define LIBUSBK_DIR "D:/libusbK/bin"
+#define LIBUSBK_DIR "W:\\libwdi-wdi-releases\\bin_libusbK\\bin"
 #endif
 
 /* embed user defined driver files from the following location */

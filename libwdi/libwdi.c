@@ -55,11 +55,11 @@ static struct wdi_device_info *current_device = NULL;
 static BOOL filter_driver = FALSE;
 static DWORD timeout = DEFAULT_TIMEOUT;
 static HANDLE pipe_handle = INVALID_HANDLE_VALUE;
-static VS_FIXEDFILEINFO driver_version[WDI_NB_DRIVERS-1] = { {0}, {0}, {0}, {0} };
-static const char* driver_name[WDI_NB_DRIVERS-1] = {"winusbcoinstaller2.dll", "libusb0.dll", "libusbK.dll", ""};
-static const char* inf_template[WDI_NB_DRIVERS-1] = {"winusb.inf.in", "libusb0.inf.in", "libusbk.inf.in", "usbser.inf.in"};
-static const char* cat_template[WDI_NB_DRIVERS-1] = {"winusb.cat.in", "libusb0.cat.in", "libusbk.cat.in", "usbser.cat.in"};
-static const char* ms_compat_id[WDI_NB_DRIVERS-1] = {"MS_COMP_WINUSB", "MS_COMP_LIBUSB0", "MS_COMP_LIBUSBK", "MS_COMP_USBSER"};
+static VS_FIXEDFILEINFO driver_version[WDI_NB_DRIVERS-1] = { {0}, {0}, {0}, {0}, {0} };
+static const char* driver_name[WDI_NB_DRIVERS-1] = {"winusbcoinstaller2.dll", "libusb0.dll", "libusbK.dll", "", "winusbcoinstaller2.dll"};
+static const char* inf_template[WDI_NB_DRIVERS-1] = {"winusb.inf.in", "libusb0.inf.in", "libusbk.inf.in", "usbser.inf.in", "winusbk.inf.in" };
+static const char* cat_template[WDI_NB_DRIVERS-1] = {"winusb.cat.in", "libusb0.cat.in", "libusbk.cat.in", "usbser.cat.in", "winusbk.cat.in" };
+static const char* ms_compat_id[WDI_NB_DRIVERS-1] = {"MS_COMP_WINUSB", "MS_COMP_LIBUSB0", "MS_COMP_LIBUSBK", "MS_COMP_USBSER", "MS_COMP_WINUSBK" };
 int nWindowsVersion = WINDOWS_UNDEFINED;
 int nWindowsBuildNumber = -1;
 char WindowsVersionStr[128] = "Windows ";
@@ -684,6 +684,12 @@ BOOL LIBWDI_API wdi_is_driver_supported(int driver_type, VS_FIXEDFILEINFO* drive
 #else
 		return FALSE;
 #endif
+	case WDI_WINUSBK:
+#if defined(WDK_DIR) &&  defined(LIBUSBK_DIR)
+		return TRUE;
+#else
+		return FALSE;
+#endif
 	case WDI_CDC:
 		return TRUE;
 	default:
@@ -1175,7 +1181,7 @@ static long wdi_tokenize_file(const char* src, char** dst, const token_entity_t*
 		ret = WDI_ERROR_RESOURCE;
 		goto out;
 	}
-	if (fread(buffer, 1, size, fd) != size) {
+	if (fread(buffer, 1, size, fd) < 1) {
 		wdi_err("Could not read file to tokenize");
 		ret = -ERROR_RESOURCE_DATA_NOT_FOUND;
 		goto out;
@@ -1198,7 +1204,7 @@ int LIBWDI_API wdi_prepare_driver(struct wdi_device_info* device_info, const cha
 	PF_TYPE_DECL(NTAPI, NTSTATUS, NtQuerySystemInformation, (SYSTEM_INFORMATION_CLASS, PVOID, ULONG, PULONG));
 	const wchar_t bom = 0xFEFF;
 #if defined(ENABLE_DEBUG_LOGGING) || defined(INCLUDE_DEBUG_LOGGING)
-	const char* driver_display_name[WDI_NB_DRIVERS] = { "WinUSB", "libusb0.sys", "libusbK.sys", "Generic USB CDC", "user driver" };
+	const char* driver_display_name[WDI_NB_DRIVERS] = { "WinUSB", "libusb0.sys", "libusbK.sys", "Generic USB CDC", "WinUSBK", "user driver" };
 #endif
 	const char* inf_ext = ".inf";
 	const char* vendor_name = NULL;
@@ -1292,6 +1298,16 @@ int LIBWDI_API wdi_prepare_driver(struct wdi_device_info* device_info, const cha
 	// If the target is libusb-win32 and we have the K DLLs, add them to the inf
 	if ((driver_type == WDI_LIBUSB0) && (wdi_is_driver_supported(WDI_LIBUSBK, NULL))) {
 		wdi_info("K driver available - adding the libusbK DLLs to the libusb-win32 inf");
+		static_strcpy(inf_entities[LK_COMMA].replace, ",");
+		static_strcpy(inf_entities[LK_DLL].replace, "libusbk.dll");
+		static_strcpy(inf_entities[LK_X86_DLL].replace, "libusbk_x86.dll");
+		static_strcpy(inf_entities[LK_EQ_X86].replace, "= 1,x86");
+		static_strcpy(inf_entities[LK_EQ_X64].replace, "= 1,amd64");
+	}
+
+	// If the target is libusb-win32 and we have the K DLLs, add them to the inf
+	if ((driver_type == WDI_WINUSBK) && (wdi_is_driver_supported(WDI_LIBUSBK, NULL))) {
+		wdi_info("K driver available - adding the libusbK DLLs to the WinUSBK inf");
 		static_strcpy(inf_entities[LK_COMMA].replace, ",");
 		static_strcpy(inf_entities[LK_DLL].replace, "libusbk.dll");
 		static_strcpy(inf_entities[LK_X86_DLL].replace, "libusbk_x86.dll");

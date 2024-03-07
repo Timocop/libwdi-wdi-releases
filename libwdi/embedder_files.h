@@ -108,6 +108,7 @@ struct emb embeddable_fixed[] = {
 #		if !defined(OPT_M32)
 			// The x86/ DLLs will not be used, but they are required for rename to _x86
 			{ 0, LIBUSBK_DIR "\\dll\\x86\\libusbK.dll", "x86" },
+			{ 0, LIBUSBK_DIR "\\dll\\x86\\libusbK_x86.dll", "x86" },
 			{ 1, "libusbK_x86.dll", "amd64" },
 #			if !defined(LIBUSB0_DIR)
 				{ 0, LIBUSBK_DIR "\\dll\\x86\\libusb0.dll", "x86" },
@@ -129,10 +130,12 @@ struct emb embeddable_fixed[] = {
 	{ 0, "winusb.inf.in", "" },
 	{ 0, "libusb0.inf.in", "" },
 	{ 0, "libusbk.inf.in", "" },
+	{ 0, "winusbk.inf.in", "" },
 	{ 0, "usbser.inf.in", "" },
 // cat file lists for self signing
 	{ 0, "winusb.cat.in", "" },
 	{ 0, "libusb0.cat.in", "" },
 	{ 0, "libusbk.cat.in", "" },
+	{ 0, "winusbk.cat.in", "" },
 	{ 0, "usbser.cat.in", "" },
 };
